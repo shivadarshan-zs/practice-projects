@@ -1,4 +1,4 @@
-package com.example.question_service.service;
+package example.question_service.service;
 
 import com.example.question_service.dao.QuestionDao;
 import com.example.question_service.model.Question;
@@ -7,6 +7,7 @@ import com.example.question_service.model.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class QuestionService {
@@ -21,6 +23,9 @@ public class QuestionService {
 
     @Autowired
     QuestionDao questionDao;
+
+    @Autowired
+    RedisTemplate<String, QuestionWrapper> userRedisTemplate;
 
     public ResponseEntity<List<Question>> getAllQuestions() {
         List<Question> questions = questionDao.findAll();
@@ -47,12 +52,29 @@ public class QuestionService {
     }
 
     public ResponseEntity<List<QuestionWrapper>> getQuestionsFromId(List<Integer> questionIds) {
-        List<Question> questions = questionDao.findAllById(questionIds);
-        logger.debug("Fetched {} questions for quiz", questions.size());
         List<QuestionWrapper> questionWrappers = new ArrayList<>();
-        for (Question q : questions) {
-            QuestionWrapper qw = new QuestionWrapper(q.getId(), q.getQuestionTitle(), q.getOption1(), q.getOption2(), q.getOption3(), q.getOption4());
-            questionWrappers.add(qw);
+        List<Integer> missingIds = new ArrayList<>();
+
+        for (Integer id : questionIds) {
+            QuestionWrapper qw = userRedisTemplate.opsForValue().get("question:" + id);
+            if (qw != null) {
+                logger.info("question cache HIT for id: {}", id);
+                questionWrappers.add(qw);
+            } else {
+                logger.info("question cache MISS for id: {}", id);
+                missingIds.add(id);
+            }
+        }
+
+        if (!missingIds.isEmpty()) {
+            List<Question> questions = questionDao.findAllById(missingIds);
+            logger.debug("Fetched {} questions for quiz from DB", questions.size());
+
+            for (Question q : questions) {
+                QuestionWrapper qw = new QuestionWrapper(q.getId(), q.getQuestionTitle(), q.getOption1(), q.getOption2(), q.getOption3(), q.getOption4());
+                questionWrappers.add(qw);
+                userRedisTemplate.opsForValue().set("question:" + q.getId(), qw,30, TimeUnit.SECONDS);
+            }
         }
         return new ResponseEntity<>(questionWrappers, HttpStatus.OK);
     }

@@ -1,4 +1,4 @@
-package com.example.question_service.controller;
+package example.question_service.controller;
 
 import com.example.question_service.model.Question;
 import com.example.question_service.model.QuestionWrapper;

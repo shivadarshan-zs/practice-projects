@@ -1,9 +1,13 @@
-package com.example.question_service.model;
+package example.question_service.model;
 
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 @Data
+@RequiredArgsConstructor
 public class QuestionWrapper {
+
+    private final long serialVersionUID = 1L;
 
     private Integer id;
     private String questionTitle;

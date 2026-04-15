@@ -1,4 +1,4 @@
-package com.example.question_service.exception;
+package example.question_service.exception;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-package com.example.question_service.exception;
+package example.question_service.exception;
 
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String message) {

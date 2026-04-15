@@ -1,4 +1,4 @@
-package com.example.question_service.model;
+package example.question_service.model;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.example.question_service.exception;
+package example.question_service.exception;
 
 public class QuizOperationException extends RuntimeException {
     public QuizOperationException(String message) {

@@ -1,4 +1,4 @@
-package com.example.question_service.dao;
+package example.question_service.dao;
 
 import com.example.question_service.model.Question;
 import org.springframework.data.jpa.repository.JpaRepository;
